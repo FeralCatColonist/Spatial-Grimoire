@@ -65,6 +65,7 @@ def IterableChunk(ServiceRequestMAX, ObjectIDManifest):
 
 def QueryExtractionRequest(ObjectID_MIN, ObjectID_MAX, ObjectID_FieldName, Out_JSON_Folder, ServiceURL):
     """Construct URL for Extraction in Chunks"""
+    global response_flag
     fields = "*"
     where = f"{ObjectID_FieldName} >= {ObjectID_MIN} and {ObjectID_FieldName} <= {ObjectID_MAX}"
     queryURL = f"{ServiceURL}/query?where={where}&returnGeometry=true&outFields={fields}&f=json"
