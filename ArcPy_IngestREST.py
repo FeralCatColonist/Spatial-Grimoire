@@ -21,6 +21,7 @@ arcpy.env.overwriteOutput = True
 json_file_iterator = 0
 query_request_standard_pause = 10
 record_extraction_hardcode = 30000
+response_flag = True
 
 session = requests.Session()
 session.headers.update({"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36"})
@@ -70,10 +71,11 @@ def QueryExtractionRequest(ObjectID_MIN, ObjectID_MAX, ObjectID_FieldName, Out_J
     response = session.get(f"{queryURL}")
     if server_error_message in response.content:
         print(f"\t\tServer had Response Code: {response.status_code}, but returned query was empty")
-        response.ok = False
+        print(queryURL)
+        response_flag = False
     time.sleep(query_request_standard_pause)
     sleep_timer = 30
-    while not response.ok:
+    while not response.ok or response_flag == False:
         sleep_timer = sleep_timer * 2
         print(f"\tResponse not OK, {response.status_code}.\n\t\tSleeping for {sleep_timer} seconds")
         time.sleep(sleep_timer)
@@ -81,7 +83,10 @@ def QueryExtractionRequest(ObjectID_MIN, ObjectID_MAX, ObjectID_FieldName, Out_J
         response = session.get(f"{queryURL}")
         if server_error_message in response.content:
             print(f"\t\tServer had Response Code: {response.status_code}, but returned query was empty")
-            response.ok = False
+            print(queryURL)
+            response_flag = False
+        else:
+            response_flag = True
     with open(f"{Out_JSON_Folder}\{str(json_file_iterator).zfill(6)}.json", "wb") as file:
         file.write(response.content)
 
