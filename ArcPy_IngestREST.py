@@ -29,12 +29,20 @@ server_error_message = b'{"error":{"code":500,"message":"Error performing query 
 start_time = time.perf_counter()
 
 # Settings - These SHOULD be changed
-service_URL = r"https://www.somesite.com/arcgis/rest/services/somesite/WebMap/MapServer/0"
+# service_URL should always end like /number, mostly commonly /0
+service_URL = r"https://www.somesite.com/arcgis/rest/services/somesite/WebMap/FeatureServer/0"
+# fields is optional and should usually be left alone, the default is * which grabs all the fields
 fields = "*"
 # out_json_folder and intermediate_gdb must be in different folders
-out_json_folder = r"C:\Users\your_user\some_folder\REST"
-intermediate_gdb_folder = r"C:\Users\your_user\some_folder\Output"
+# create a new folder in your project directory for each of these
+# this holds the json chunks
+out_json_folder = r"C:\Users\your_user\some_folder\some_new_subfolder01"
+# this stores the json chunks as separate feature classes
+intermediate_gdb_folder = r"C:\Users\your_user\some_folder\some_new_subfolder02"
+# this is the path to your target geodatabase, it must already exist and is probably your project file geodatabase
+# this is where all of the feature class chunks will be appended into a single final feature class
 final_gdb = r"C:\Users\your_user\some_folder\Final_Database_Here.gdb"
+# this is what you want your output feature class to be called
 final_featureclass = f"The_Feature_Class"
 
 def ServiceGetRecordExtract(ServiceURL):
@@ -114,10 +122,11 @@ def ConvertJSONstoFeatureClasses(Out_JSON_Folder, Intermediate_GDB_Folder):
 
 def ReplaceFinalFeatureClassWithIntermediateFeatureClasses(Final_GDB, Final_FeatureClass):
     """Fully Replace the Final Location Feature Class with the Intermediate Feature Classes"""
-    list_fc = arcpy.ListFeatureClasses()
     if arcpy.Exists(f"{Final_GDB}\{Final_FeatureClass}"):
         arcpy.management.Delete(f"{Final_GDB}\{Final_FeatureClass}")
-    arcpy.management.CreateFeatureclass(Final_GDB, Final_FeatureClass, "POLYGON", template=list_fc[0], spatial_reference=list_fc[0])
+    list_fc = arcpy.ListFeatureClasses()
+    describe_fc = arcpy.Describe(list_fc[0])
+    arcpy.management.CreateFeatureclass(Final_GDB, Final_FeatureClass, describe_fc.shapeType, template=list_fc[0], spatial_reference=list_fc[0])
     arcpy.management.Append(list_fc, f"{Final_GDB}\{Final_FeatureClass}", "NO_TEST")
 
 
