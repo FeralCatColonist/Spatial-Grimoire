@@ -24,7 +24,7 @@ def prune_copies(webgisdr_backups_path: Path, backup_arguments: argparse.Namespa
     WebGISDR_backups.sort(reverse=True)
     file_names = [file.name for file in WebGISDR_backups]
     backups_retained = file_names[: backup_arguments.copies]
-    backups_pruned = [item for item in file_names if item not in backups_retained]
+    backups_pruned = file_names[backup_arguments.copies :]
     for file in backups_pruned:
         Path(webgisdr_backups_path, file).unlink()
     print(f"\tretained:\t{backups_retained}\n\tpruned:\t\t{backups_pruned}\n")
@@ -42,7 +42,7 @@ def set_WebGISDR(webgisdr_dir: Path, webgisdr_filename: str, backup_mode: str):
     print(f"Setting {webgisdr_filename}.properties: BACKUP_RESTORE_MODE")
     WebGISDR_properties = Path(webgisdr_dir, f"{webgisdr_filename}.properties")
     file_content = WebGISDR_properties.read_text()
-    lines = [line for line in file_content.splitlines()]
+    lines = file_content.splitlines()
     for i, line in enumerate(lines):
         if "BACKUP_RESTORE_MODE =" in line:
             print(f"\tcurrent value:\t{line.split(' = ')[-1]}")
